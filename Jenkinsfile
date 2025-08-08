@@ -2,11 +2,22 @@ pipeline {
     agent any
     
     stages {
+        stage('拉取GitHub代码') {
+            steps {
+                script {
+                    echo "从GitHub拉取代码..."
+                    bat '''
+                        git clone https://github.com/youke1022/oeasy-python-tutorial %WORKSPACE%
+                    '''
+                    echo "代码拉取完成"
+                }
+            }
+        }
+        
         stage('启动容器并挂载项目') {
             steps {
                 script {
                     echo "创建并启动dixiacheng容器..."
-                    // Windows宿主机使用bat命令
                     bat '''
                         docker run -d ^
                             --name dixiacheng ^
@@ -23,8 +34,8 @@ pipeline {
             steps {
                 script {
                     echo "进入容器并执行游戏..."
-                    // 严格按照要求传递输入序列：a→100→1
-                    bat 'docker exec dixiacheng sh -c \'cd /app/samples/000005 && echo -e "a\\n100\\n1\\n" | python game.py\''
+                    // 修复Windows bat命令的引号转义问题
+                    bat "docker exec dixiacheng sh -c \"cd /app/samples/000005 && echo -e 'a\\n100\\n1\\n' | python game.py\""
                 }
             }
         }
